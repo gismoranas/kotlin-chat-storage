@@ -2,7 +2,8 @@ package de.cmanigrasso.chatstorage.api
 
 import de.cmanigrasso.chatstorage.exception.RoomAlreadyArchivedException
 import de.cmanigrasso.chatstorage.exception.RoomNotFoundException
-import de.cmanigrasso.chatstorage.service.ChatService
+import de.cmanigrasso.chatstorage.service.ChatStorageService
+import mu.KotlinLogging
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.HttpStatus.NOT_ACCEPTABLE
 import org.springframework.http.HttpStatus.NOT_FOUND
@@ -26,14 +27,16 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("rooms")
 class RoomController(
-    private val service: ChatService
+    private val service: ChatStorageService
 ) {
+
+    private val logger = KotlinLogging.logger {}
 
     @GetMapping
     fun getAll() = service.findAllRooms()
 
     @PostMapping
-    fun saveRoom(@RequestParam name: String) = service.startNewRoom(name)
+    fun createRoom(@RequestParam name: String) = service.createRoom(name)
 
     @PostMapping("{roomId}/archive")
     fun archive(@PathVariable roomId: String): ResponseEntity<Any> =
@@ -63,7 +66,7 @@ class RoomController(
         } catch (e: RoomAlreadyArchivedException) {
             ResponseEntity("Room is already archived. id = $roomId", NOT_ACCEPTABLE)
         } catch (e: Throwable) {
-            e.printStackTrace()
+            logger.error(e) { "Unexpected error." }
             ResponseEntity("Unexpected error: ${e.message}", INTERNAL_SERVER_ERROR)
         }
 

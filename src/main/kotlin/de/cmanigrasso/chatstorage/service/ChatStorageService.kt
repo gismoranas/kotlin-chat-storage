@@ -9,13 +9,16 @@ import de.cmanigrasso.chatstorage.exception.RoomAlreadyArchivedException
 import de.cmanigrasso.chatstorage.exception.RoomNotFoundException
 import de.cmanigrasso.chatstorage.repository.MessageRepository
 import de.cmanigrasso.chatstorage.repository.RoomRepository
+import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service
-class ChatService(
+class ChatStorageService(
     private val messageRepository: MessageRepository,
     private val roomRepository: RoomRepository
 ) {
+
+    private val logger = KotlinLogging.logger {}
 
     fun findAllMessages() = messageRepository.findAll().toList()
 
@@ -28,7 +31,9 @@ class ChatService(
             messageRepository.findByRoomIdOrderByDateAsc(roomId)
         }
 
-    fun startNewRoom(name: String): Room = roomRepository.save(Room(name = name))
+    fun createRoom(name: String): Room =
+        roomRepository.save(Room(name = name))
+            .apply { logger.info { "Created new room. name=$name, id=$id" } }
 
     private fun findRoom(id: String, checkIfArchived: Boolean = false) =
         roomRepository.findById(id).let {
@@ -42,6 +47,7 @@ class ChatService(
     fun archiveRoom(id: String): Room =
         findRoom(id, checkIfArchived = true).let {
             roomRepository.save(it.copy(status = ARCHIVED))
+                .apply { logger.info { "Archived room. name=$name, id=$id" } }
         }
 
     fun saveNewMessage(roomId: String, request: MessageRequest) =
@@ -52,7 +58,7 @@ class ChatService(
                     text = request.text,
                     roomId = roomId
                 )
-            )
+            ).apply { logger.info { "Saved message. name=$name, roomId=$roomId, text=${text.take(10)}(...)" } }
         }
 
     fun findNamesByRoomId(roomId: String): List<String> =

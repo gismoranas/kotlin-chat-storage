@@ -1,7 +1,7 @@
 package de.cmanigrasso.chatstorage.api
 
 import de.cmanigrasso.chatstorage.domain.Message
-import de.cmanigrasso.chatstorage.service.ChatService
+import de.cmanigrasso.chatstorage.service.ChatStorageService
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("messages")
 class MessageController(
-    val service: ChatService
+    val service: ChatStorageService
 ) {
 
     @GetMapping
